@@ -1,0 +1,16 @@
+services:
+  web:
+    public: true
+    build: .
+    ports:
+      - 8080:8080
+
+  database:
+    image: bitnami/mongodb
+    ports:
+      - 27017
+    volumes:
+      - mongodb-data:/bitnami/mongodb
+
+volumes:
+  mongodb-data:
