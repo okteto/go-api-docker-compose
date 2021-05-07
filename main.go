@@ -85,7 +85,7 @@ func UpdateFood(response http.ResponseWriter, request *http.Request) {
 	var food Food
 	_ = json.NewDecoder(request.Body).Decode(&food)
 
-	_ = collection.FindOneAndUpdate(ctx, bson.D{{"_id", id}}, bson.D{
+	result, _ := collection.UpdateOne(ctx, bson.M{"_id": id}, bson.D{
 		{
 			"$set", bson.D{{
 			"name", food.Name,
@@ -97,9 +97,15 @@ func UpdateFood(response http.ResponseWriter, request *http.Request) {
 		},
 	})
 
-	response.Write([]byte(`{
-		"message": "Data updated successfully"
-	}`))
+	if result.MatchedCount == 0 {
+		response.Write([]byte(`{
+			"message": "Invalid ID passed"	
+		}`))
+		return
+	}
+
+	response.Write([]byte(`{"message": "Food data updated successfully"}`))
+
 }
 
 func DeleteFood(response http.ResponseWriter, request *http.Request) {
