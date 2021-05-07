@@ -16,14 +16,9 @@ import (
 var client *mongo.Client
 
 type Food struct {
-	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	Name string             `json:"name,omitempty" bson:"name,omitempty"`
-	Tribe  string             `json:"tribe,omitempty" bson:"tribe,omitempty"`
-}
-
-func Welome(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("content-type", "application/json")
-	fmt.Fprint(response, "Welcome to the Okteto Foods App")
+	ID    primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Name  string             `json:"name,omitempty" bson:"name,omitempty"`
+	Tribe string             `json:"tribe,omitempty" bson:"tribe,omitempty"`
 }
 
 func AddFood(response http.ResponseWriter, request *http.Request) {
@@ -74,7 +69,57 @@ func GetFoods(response http.ResponseWriter, request *http.Request) {
 		response.Write([]byte(`{ "message": "` + err.Error() + `" }`))
 		return
 	}
+
 	json.NewEncoder(response).Encode(foods)
+
+}
+
+func UpdateFood(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("content-type", "application/json")
+	params := mux.Vars(request)
+
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	collection := client.Database("foodrestapi").Collection("foods")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	var food Food
+	_ = json.NewDecoder(request.Body).Decode(&food)
+
+	_ = collection.FindOneAndUpdate(ctx, bson.D{{"_id", id}}, bson.D{
+		{
+			"$set", bson.D{{
+			"name", food.Name,
+		}},
+		}, {
+			"$set", bson.D{{
+				"tribe", food.Tribe,
+			}},
+		},
+	})
+
+	response.Write([]byte(`{
+		"message": "Data updated successfully"
+	}`))
+}
+
+func DeleteFood(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("content-type", "application/json")
+	params := mux.Vars(request)
+
+	id, _ := primitive.ObjectIDFromHex(params["id"])
+	collection := client.Database("foodrestapi").Collection("foods")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	err := collection.FindOneAndDelete(ctx, Food{ID: id})
+
+	if err == nil {
+		response.Write([]byte(`{"message": "Invalid ID passed"}`))
+	}
+
+	response.Write([]byte(`{
+		"message": "Food data deleted successfully",
+	}`))
+
 }
 
 func main() {
@@ -83,9 +128,10 @@ func main() {
 	clientOptions := options.Client().ApplyURI("mongodb://mongodb:27017")
 	client, _ = mongo.Connect(ctx, clientOptions)
 	router := mux.NewRouter()
-	router.HandleFunc("/", Welome).Methods("GET")
 	router.HandleFunc("/food", AddFood).Methods("POST")
-	router.HandleFunc("/foods", GetFoods).Methods("GET")
+	router.HandleFunc("/food", GetFoods).Methods("GET")
 	router.HandleFunc("/food/{id}", GetFood).Methods("GET")
+	router.HandleFunc("/food/{id}", UpdateFood).Methods("PUT")
+	router.HandleFunc("/food/{id}", DeleteFood).Methods("DELETE")
 	http.ListenAndServe(":8080", router)
 }
