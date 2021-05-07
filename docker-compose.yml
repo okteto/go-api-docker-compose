@@ -1,7 +1,5 @@
 services:
   web:
-    public: true
-    image: okteto.dev/go-crud-compose:latest
     build: .
     ports:
       - 8080:8080
