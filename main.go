@@ -25,7 +25,7 @@ func AddFood(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("content-type", "application/json")
 	var food Food
 	_ = json.NewDecoder(request.Body).Decode(&food)
-	collection := client.Database("foodrestapi").Collection("foods")
+	collection := client.Database("myfood").Collection("foods")
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	result, _ := collection.InsertOne(ctx, food)
 	json.NewEncoder(response).Encode(result)
@@ -36,7 +36,7 @@ func GetFood(response http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	id, _ := primitive.ObjectIDFromHex(params["id"])
 	var food Food
-	collection := client.Database("foodrestapi").Collection("foods")
+	collection := client.Database("myfood").Collection("foods")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	err := collection.FindOne(ctx, Food{ID: id}).Decode(&food)
 	if err != nil {
@@ -50,7 +50,7 @@ func GetFood(response http.ResponseWriter, request *http.Request) {
 func GetFoods(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("content-type", "application/json")
 	var foods []Food
-	collection := client.Database("foodrestapi").Collection("foods")
+	collection := client.Database("myfood").Collection("foods")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	cursor, err := collection.Find(ctx, bson.M{})
 	if err != nil {
@@ -79,7 +79,7 @@ func UpdateFood(response http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
 	id, _ := primitive.ObjectIDFromHex(params["id"])
-	collection := client.Database("foodrestapi").Collection("foods")
+	collection := client.Database("myfood").Collection("foods")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
 	var food Food
@@ -113,7 +113,7 @@ func DeleteFood(response http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 
 	id, _ := primitive.ObjectIDFromHex(params["id"])
-	collection := client.Database("foodrestapi").Collection("foods")
+	collection := client.Database("myfood").Collection("foods")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
 	err := collection.FindOneAndDelete(ctx, Food{ID: id})
