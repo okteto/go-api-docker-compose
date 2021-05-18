@@ -74,60 +74,6 @@ func GetFoods(response http.ResponseWriter, request *http.Request) {
 
 }
 
-func UpdateFood(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("content-type", "application/json")
-	params := mux.Vars(request)
-
-	id, _ := primitive.ObjectIDFromHex(params["id"])
-	collection := client.Database("myfood").Collection("foods")
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-
-	var food Food
-	_ = json.NewDecoder(request.Body).Decode(&food)
-
-	result, _ := collection.UpdateOne(ctx, bson.M{"_id": id}, bson.D{
-		{
-			"$set", bson.D{{
-			"name", food.Name,
-		}},
-		}, {
-			"$set", bson.D{{
-				"tribe", food.Tribe,
-			}},
-		},
-	})
-
-	if result.MatchedCount == 0 {
-		response.Write([]byte(`{
-			"message": "Invalid ID passed"	
-		}`))
-		return
-	}
-
-	response.Write([]byte(`{"message": "Food data updated successfully"}`))
-
-}
-
-func DeleteFood(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("content-type", "application/json")
-	params := mux.Vars(request)
-
-	id, _ := primitive.ObjectIDFromHex(params["id"])
-	collection := client.Database("myfood").Collection("foods")
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-
-	err := collection.FindOneAndDelete(ctx, Food{ID: id})
-
-	if err == nil {
-		response.Write([]byte(`{"message": "Invalid ID passed"}`))
-	}
-
-	response.Write([]byte(`{
-		"message": "Food data deleted successfully",
-	}`))
-
-}
-
 func main() {
 	fmt.Println("Starting the application on port 8080")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -137,7 +83,5 @@ func main() {
 	router.HandleFunc("/food", AddFood).Methods("POST")
 	router.HandleFunc("/food", GetFoods).Methods("GET")
 	router.HandleFunc("/food/{id}", GetFood).Methods("GET")
-	router.HandleFunc("/food/{id}", UpdateFood).Methods("PUT")
-	router.HandleFunc("/food/{id}", DeleteFood).Methods("DELETE")
 	http.ListenAndServe(":8080", router)
 }
