@@ -22,7 +22,7 @@ type Food struct {
 }
 
 func Welcome(response http.ResponseWriter, request *http.Request) {
-	fmt.Fprint(response, "Welcome to MyFood App")
+	fmt.Fprint(response, "Welcome to MyFood App!")
 }
 
 func AddFood(response http.ResponseWriter, request *http.Request) {
