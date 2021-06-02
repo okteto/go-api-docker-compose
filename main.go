@@ -21,6 +21,10 @@ type Food struct {
 	Tribe string             `json:"tribe,omitempty" bson:"tribe,omitempty"`
 }
 
+func Welcome(response http.ResponseWriter, request *http.Request) {
+	fmt.Fprint(response, "Welcome to MyFood App!")
+}
+
 func AddFood(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("content-type", "application/json")
 	var food Food
@@ -83,5 +87,6 @@ func main() {
 	router.HandleFunc("/food", AddFood).Methods("POST")
 	router.HandleFunc("/food", GetFoods).Methods("GET")
 	router.HandleFunc("/food/{id}", GetFood).Methods("GET")
+	router.HandleFunc("/", Welcome).Methods("GET")
 	http.ListenAndServe(":8080", router)
 }
