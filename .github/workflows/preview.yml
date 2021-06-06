@@ -20,13 +20,13 @@ jobs:
     - name: Create namespace
       uses: okteto/create-namespace@master
       with:
-        namespace: pr-${{ github.event.number }}-namespace
+        namespace: pr-${{ github.event.number }}-youngestdev
    
     - name: Deploy application
       uses: okteto/deploy-stack@master
       with:
         build: "true"
-        namespace: pr-${{ github.event.number }}-namespace
+        namespace: pr-${{ github.event.number }}-youngestdev
 
     - name: add comment to PR
       uses: okteto/notify-pr@master
