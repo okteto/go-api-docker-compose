@@ -1,0 +1,3 @@
+deploy:
+- okteto stack deploy --build
+- kubectl annotate ingress okteto-web dev.okteto.com/private=true --overwrite
